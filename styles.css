@@ -184,6 +184,54 @@ h2 {
   line-height: 1.35;
 }
 
+.celebration-overlay {
+  position: relative;
+  height: 0;
+  pointer-events: none;
+}
+
+.celebration-bubble {
+  position: absolute;
+  left: 50%;
+  top: -8px;
+  transform: translateX(-50%) scale(0.8);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 2px solid #7a4d1d;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff2af, #f3b63f);
+  color: #6d3f10;
+  font-weight: 900;
+  font-family: "VT323", monospace;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+  box-shadow: 0 4px 0 rgba(80, 46, 15, 0.24);
+  animation: popIn 1.2s ease forwards;
+}
+
+.celebration-fish {
+  width: 20px;
+  height: 20px;
+  image-rendering: pixelated;
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.7);
+  }
+  70% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.95);
+  }
+}
+
 .tab-content {
   margin-top: 10px;
 }

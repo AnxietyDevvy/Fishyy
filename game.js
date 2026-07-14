@@ -109,6 +109,7 @@ const ui = {
   fishBtn: document.getElementById("fishBtn"),
   soundBtn: document.getElementById("soundBtn"),
   catchLog: document.getElementById("catchLog"),
+  celebrationOverlay: document.getElementById("celebrationOverlay"),
   inventoryList: document.getElementById("inventoryList"),
   sellOneBtn: document.getElementById("sellOneBtn"),
   sellAllBtn: document.getElementById("sellAllBtn"),
@@ -123,11 +124,13 @@ const ui = {
 };
 
 const ctx = ui.pondCanvas.getContext("2d");
+ctx.imageSmoothingEnabled = false;
 let ripplePhase = 0;
 let bobberY = 128;
 let bobberPulse = 0;
 let ambientTimer = 0;
 let audioCtx;
+let fishSprites = [];
 
 const seasons = ["spring", "summer", "autumn", "winter"];
 const dayModes = ["day", "evening", "night"];
@@ -212,6 +215,34 @@ function chooseFish(region) {
   return { ...pick, event: false };
 }
 
+function showCelebration(name) {
+  const bubble = document.createElement("div");
+  bubble.className = "celebration-bubble";
+
+  const fish = document.createElement("img");
+  fish.className = "celebration-fish";
+  fish.src = "data:image/svg+xml;utf8," + encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+      <rect x="3" y="8" width="10" height="4" fill="#f4a261" />
+      <rect x="9" y="8" width="4" height="4" fill="#c96d3a" />
+      <rect x="13" y="8" width="3" height="2" fill="#f4a261" />
+      <rect x="6" y="7" width="2" height="2" fill="#2f241d" />
+      <rect x="2" y="9" width="2" height="2" fill="#6daedb" />
+    </svg>
+  `);
+
+  const label = document.createElement("span");
+  label.textContent = `Congratulations! ${name}`;
+
+  bubble.appendChild(fish);
+  bubble.appendChild(label);
+  ui.celebrationOverlay.appendChild(bubble);
+
+  setTimeout(() => {
+    bubble.remove();
+  }, 1300);
+}
+
 function catchFish() {
   if (state.isFishing) {
     return;
@@ -242,6 +273,7 @@ function catchFish() {
 
     const eventText = fish.event ? " Event catch!" : "";
     ui.catchLog.textContent = `You caught ${fish.name} (${rarity.label}) and earned ${immediateCoins} coins.${eventText}`;
+    showCelebration(fish.name);
 
     if (fish.event) {
       ping(900, 0.16, 0.06);
@@ -587,6 +619,90 @@ function renderAll() {
   renderTabContent();
 }
 
+function drawPixelPattern(ctx, pattern, x, y, scale, color) {
+  pattern.forEach((row, rowIndex) => {
+    row.forEach((cell, colIndex) => {
+      if (cell) {
+        ctx.fillStyle = color;
+        ctx.fillRect(x + colIndex * scale, y + rowIndex * scale, scale, scale);
+      }
+    });
+  });
+}
+
+function drawFishSprite(ctx, x, y, scale, color, accent, flip = false) {
+  ctx.save();
+  ctx.translate(x, y);
+  if (flip) {
+    ctx.scale(-1, 1);
+  }
+
+  drawPixelPattern(
+    ctx,
+    [
+      [0, 0, 1, 1, 1, 1, 1, 0, 0],
+      [0, 1, 1, 1, 1, 1, 1, 1, 0],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [0, 1, 1, 1, 1, 1, 1, 1, 0],
+      [0, 0, 1, 1, 1, 1, 1, 0, 0],
+    ],
+    0,
+    0,
+    scale,
+    color
+  );
+
+  drawPixelPattern(
+    ctx,
+    [
+      [0, 1, 0],
+      [1, 1, 1],
+      [0, 1, 0],
+    ],
+    1 * scale,
+    1 * scale,
+    scale,
+    accent
+  );
+
+  drawPixelPattern(
+    ctx,
+    [
+      [1, 1],
+      [0, 1],
+    ],
+    7 * scale,
+    1 * scale,
+    scale,
+    accent
+  );
+
+  ctx.fillStyle = "#2f241d";
+  ctx.fillRect(7 * scale, 2 * scale, scale, scale);
+  ctx.restore();
+}
+
+function initFishSprites() {
+  fishSprites = [
+    { x: 70, y: 150, dx: 0.7, scale: 3, color: "#f4a261", accent: "#c96d3a", flip: false },
+    { x: 260, y: 190, dx: 0.9, scale: 2.6, color: "#6ba7d8", accent: "#3c6f97", flip: true },
+    { x: 390, y: 160, dx: 0.55, scale: 2.4, color: "#8bcf79", accent: "#5d8f49", flip: false },
+    { x: 460, y: 210, dx: 0.8, scale: 2.8, color: "#d97f8d", accent: "#944758", flip: true },
+  ];
+}
+
+function updateFishSprites() {
+  fishSprites.forEach((fish, index) => {
+    fish.x += fish.dx;
+    fish.y += Math.sin(Date.now() / 600 + index) * 0.02;
+
+    if (fish.x > ui.pondCanvas.width + 30) {
+      fish.x = -30;
+      fish.y = 140 + ((index % 3) * 20);
+    }
+  });
+}
+
 function drawPond() {
   const w = ui.pondCanvas.width;
   const h = ui.pondCanvas.height;
@@ -615,6 +731,11 @@ function drawPond() {
     ctx.fillStyle = i % 2 === 0 ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.12)";
     ctx.fillRect(20 + sway, y, w - 40, 3);
   }
+
+  updateFishSprites();
+  fishSprites.forEach((fish) => {
+    drawFishSprite(ctx, fish.x, fish.y, fish.scale, fish.color, fish.accent, fish.flip);
+  });
 
   ctx.fillStyle = "#3d5e3d";
   ctx.fillRect(0, h * 0.28, w, 18);
@@ -732,5 +853,6 @@ setInterval(() => {
 
 setupAudio();
 buildQuest();
+initFishSprites();
 renderAll();
 drawPond();
