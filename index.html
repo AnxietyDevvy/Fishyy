@@ -28,42 +28,80 @@
 
       <section class="layout">
         <section class="left-col card pond-card">
-          <canvas id="pondCanvas" width="560" height="300" aria-label="Fishing pond scene"></canvas>
+          <div class="tab-bar" role="tablist" aria-label="Game sections">
+            <button class="tab-button active" data-tab="npc">NPC</button>
+            <button class="tab-button" data-tab="gear">Gear</button>
+            <button class="tab-button" data-tab="inventory">Inventory</button>
+            <button class="tab-button" data-tab="shop">Shop</button>
+            <button class="tab-button" data-tab="routes">Routes</button>
+          </div>
+
+          <div class="pond-shell">
+            <canvas id="pondCanvas" width="520" height="280" aria-label="Fishing pond scene"></canvas>
+          </div>
+
           <div class="action-row">
             <button id="fishBtn" class="btn primary">Cast Line</button>
             <button id="soundBtn" class="btn ghost">Sound: On</button>
           </div>
           <p id="catchLog" class="catch-log">Welcome! Cast your line to begin.</p>
+
+          <div class="tab-content">
+            <div class="tab-panel active" data-panel="npc">
+              <div class="panel-card">
+                <div class="panel-head">
+                  <h2>Villager</h2>
+                  <button id="refreshQuestBtn" class="btn tiny">New Request</button>
+                </div>
+                <div id="questContent" class="quest-content"></div>
+              </div>
+            </div>
+
+            <div class="tab-panel" data-panel="gear">
+              <div class="panel-card">
+                <div class="panel-head">
+                  <h2>Gear</h2>
+                  <span class="chip">Cabin Kit</span>
+                </div>
+                <div id="gearContent" class="gear-stack"></div>
+              </div>
+            </div>
+
+            <div class="tab-panel" data-panel="inventory">
+              <div class="panel-card">
+                <div class="panel-head">
+                  <h2>Inventory</h2>
+                  <span class="chip">Basket</span>
+                </div>
+                <ul id="inventoryList" class="list"></ul>
+                <div class="panel-actions">
+                  <button id="sellOneBtn" class="btn">Sell 1</button>
+                  <button id="sellAllBtn" class="btn">Sell All</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-panel" data-panel="shop">
+              <div class="panel-card">
+                <div class="panel-head">
+                  <h2>Shop</h2>
+                  <span class="chip">Tips</span>
+                </div>
+                <div id="shopContent" class="shop-stack"></div>
+              </div>
+            </div>
+
+            <div class="tab-panel" data-panel="routes">
+              <div class="panel-card">
+                <div class="panel-head">
+                  <h2>Routes</h2>
+                  <span class="chip">Travel</span>
+                </div>
+                <div id="routesContent" class="region-items"></div>
+              </div>
+            </div>
+          </div>
         </section>
-
-        <aside class="right-col">
-          <section class="card panel" id="inventoryPanel">
-            <h2>Inventory</h2>
-            <ul id="inventoryList" class="list"></ul>
-            <div class="panel-actions">
-              <button id="sellOneBtn" class="btn">Sell 1 Random</button>
-              <button id="sellAllBtn" class="btn">Sell All</button>
-            </div>
-          </section>
-
-          <section class="card panel" id="shopPanel">
-            <h2>Tackle Shop</h2>
-            <div id="shopItems" class="shop-items"></div>
-          </section>
-
-          <section class="card panel" id="regionPanel">
-            <h2>Regions</h2>
-            <div id="regionItems" class="region-items"></div>
-          </section>
-
-          <section class="card panel" id="questPanel">
-            <div class="quest-head">
-              <h2>Villager Requests</h2>
-              <button id="refreshQuestBtn" class="btn tiny">New Request</button>
-            </div>
-            <div id="questContent" class="quest-content"></div>
-          </section>
-        </aside>
       </section>
     </main>
 

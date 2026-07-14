@@ -97,6 +97,7 @@ const state = {
   dayTick: 0,
   soundOn: true,
   quest: null,
+  activeTab: "npc",
 };
 
 const ui = {
@@ -111,11 +112,14 @@ const ui = {
   inventoryList: document.getElementById("inventoryList"),
   sellOneBtn: document.getElementById("sellOneBtn"),
   sellAllBtn: document.getElementById("sellAllBtn"),
-  shopItems: document.getElementById("shopItems"),
-  regionItems: document.getElementById("regionItems"),
+  gearContent: document.getElementById("gearContent"),
+  routesContent: document.getElementById("routesContent"),
   questContent: document.getElementById("questContent"),
   refreshQuestBtn: document.getElementById("refreshQuestBtn"),
   pondCanvas: document.getElementById("pondCanvas"),
+  shopContent: document.getElementById("shopContent"),
+  tabButtons: Array.from(document.querySelectorAll(".tab-button")),
+  tabPanels: Array.from(document.querySelectorAll(".tab-panel")),
 };
 
 const ctx = ui.pondCanvas.getContext("2d");
@@ -395,8 +399,36 @@ function renderInventory() {
     });
 }
 
-function renderShop() {
-  ui.shopItems.innerHTML = "";
+function renderGearSection(type, container) {
+  container.innerHTML = "";
+
+  for (const item of gear[type]) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "item";
+
+    const isEquipped = state[`equipped${capitalize(type.slice(0, -1))}`] === item.id;
+    const buyLabel = item.unlocked ? (isEquipped ? "Equipped" : "Equip") : `Buy ${item.cost}`;
+
+    wrapper.innerHTML = `
+      <div class="item-head">
+        <span>${item.name}</span>
+        <span>${item.unlocked ? "Owned" : item.cost + "c"}</span>
+      </div>
+      <div class="small">${describeGear(type, item)}</div>
+    `;
+
+    const button = document.createElement("button");
+    button.className = "btn tiny";
+    button.textContent = buyLabel;
+    button.disabled = isEquipped;
+    button.addEventListener("click", () => tryBuy(type, item.id));
+    wrapper.appendChild(button);
+    container.appendChild(wrapper);
+  }
+}
+
+function renderGearPanel() {
+  ui.gearContent.innerHTML = "";
 
   const sections = [
     { title: "Rods", type: "rods" },
@@ -405,34 +437,45 @@ function renderShop() {
   ];
 
   for (const section of sections) {
-    const head = document.createElement("div");
-    head.className = "small";
-    head.textContent = section.title;
-    ui.shopItems.appendChild(head);
+    const wrapper = document.createElement("div");
+    wrapper.className = "item";
 
-    for (const item of gear[section.type]) {
-      const wrapper = document.createElement("div");
-      wrapper.className = "item";
+    const heading = document.createElement("div");
+    heading.className = "item-head";
+    heading.innerHTML = `<span>${section.title}</span>`;
+    wrapper.appendChild(heading);
 
-      const isEquipped = state[`equipped${capitalize(section.type.slice(0, -1))}`] === item.id;
-      const buyLabel = item.unlocked ? (isEquipped ? "Equipped" : "Equip") : `Buy ${item.cost}`;
+    const list = document.createElement("div");
+    list.className = "gear-stack";
+    wrapper.appendChild(list);
 
-      wrapper.innerHTML = `
-        <div class="item-head">
-          <span>${item.name}</span>
-          <span>${item.unlocked ? "Owned" : item.cost + "c"}</span>
-        </div>
-        <div class="small">${describeGear(section.type, item)}</div>
-      `;
+    ui.gearContent.appendChild(wrapper);
+    renderGearSection(section.type, list);
+  }
+}
 
-      const button = document.createElement("button");
-      button.className = "btn tiny";
-      button.textContent = buyLabel;
-      button.disabled = isEquipped;
-      button.addEventListener("click", () => tryBuy(section.type, item.id));
-      wrapper.appendChild(button);
-      ui.shopItems.appendChild(wrapper);
-    }
+function renderShopPanel() {
+  ui.shopContent.innerHTML = "";
+
+  const rod = getGearItem("rods", state.equippedRod);
+  const bait = getGearItem("bait", state.equippedBait);
+  const lure = getGearItem("lures", state.equippedLure);
+
+  const notes = [
+    { title: "Current setup", text: `${rod.name} • ${bait.name} • ${lure.name}` },
+    { title: "Helpful tip", text: "Save coins for the next rod or a rare-lure upgrade to improve your odds." },
+  ];
+
+  for (const note of notes) {
+    const card = document.createElement("div");
+    card.className = "item";
+    card.innerHTML = `
+      <div class="item-head">
+        <span>${note.title}</span>
+      </div>
+      <div class="small">${note.text}</div>
+    `;
+    ui.shopContent.appendChild(card);
   }
 }
 
@@ -447,7 +490,7 @@ function describeGear(type, item) {
 }
 
 function renderRegions() {
-  ui.regionItems.innerHTML = "";
+  ui.routesContent.innerHTML = "";
 
   for (const region of regions) {
     const unlocked = state.unlockedRegions.has(region.id);
@@ -471,7 +514,7 @@ function renderRegions() {
     button.addEventListener("click", () => unlockOrTravel(region.id));
 
     card.appendChild(button);
-    ui.regionItems.appendChild(card);
+    ui.routesContent.appendChild(card);
   }
 }
 
@@ -524,12 +567,24 @@ function renderHUD() {
   ui.app.classList.add(`mode-${getCurrentMode()}`);
 }
 
+function renderTabContent() {
+  ui.tabButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.tab === state.activeTab);
+  });
+
+  ui.tabPanels.forEach((panel) => {
+    panel.classList.toggle("active", panel.dataset.panel === state.activeTab);
+  });
+}
+
 function renderAll() {
   renderHUD();
   renderInventory();
-  renderShop();
+  renderGearPanel();
+  renderShopPanel();
   renderRegions();
   renderQuest();
+  renderTabContent();
 }
 
 function drawPond() {
@@ -636,6 +691,13 @@ function startAmbientLoop() {
 function capitalize(value) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
+
+ui.tabButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    state.activeTab = button.dataset.tab;
+    renderTabContent();
+  });
+});
 
 ui.fishBtn.addEventListener("click", () => {
   if (audioCtx?.state === "suspended") {
