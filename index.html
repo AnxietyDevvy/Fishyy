@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cozy Pixel Fishing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-layer bg-layer-1"></div>
+    <div class="bg-layer bg-layer-2"></div>
+
+    <main class="app" id="app">
+      <header class="topbar card">
+        <div class="title-wrap">
+          <h1>Cozy Pixel Fishing</h1>
+          <p id="timeSeason">Dawn • Spring</p>
+        </div>
+        <div class="stats">
+          <div class="stat-pill"><span>Coins</span><strong id="coins">0</strong></div>
+          <div class="stat-pill"><span>Region</span><strong id="regionName">-</strong></div>
+          <div class="stat-pill"><span>Rod</span><strong id="rodName">-</strong></div>
+        </div>
+      </header>
+
+      <section class="layout">
+        <section class="left-col card pond-card">
+          <canvas id="pondCanvas" width="560" height="300" aria-label="Fishing pond scene"></canvas>
+          <div class="action-row">
+            <button id="fishBtn" class="btn primary">Cast Line</button>
+            <button id="soundBtn" class="btn ghost">Sound: On</button>
+          </div>
+          <p id="catchLog" class="catch-log">Welcome! Cast your line to begin.</p>
+        </section>
+
+        <aside class="right-col">
+          <section class="card panel" id="inventoryPanel">
+            <h2>Inventory</h2>
+            <ul id="inventoryList" class="list"></ul>
+            <div class="panel-actions">
+              <button id="sellOneBtn" class="btn">Sell 1 Random</button>
+              <button id="sellAllBtn" class="btn">Sell All</button>
+            </div>
+          </section>
+
+          <section class="card panel" id="shopPanel">
+            <h2>Tackle Shop</h2>
+            <div id="shopItems" class="shop-items"></div>
+          </section>
+
+          <section class="card panel" id="regionPanel">
+            <h2>Regions</h2>
+            <div id="regionItems" class="region-items"></div>
+          </section>
+
+          <section class="card panel" id="questPanel">
+            <div class="quest-head">
+              <h2>Villager Requests</h2>
+              <button id="refreshQuestBtn" class="btn tiny">New Request</button>
+            </div>
+            <div id="questContent" class="quest-content"></div>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>
